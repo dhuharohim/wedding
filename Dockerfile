@@ -13,8 +13,8 @@ RUN npm run build
 
 FROM node:20-alpine AS production
 WORKDIR /app
-# Copy only package.json to resolve runtime deps for musl/Alpine
-COPY package.json ./
-RUN npm install --omit=dev --no-audit --no-fund
+# Install a lightweight static server
+RUN npm install -g serve
+EXPOSE 3000
 COPY --from=build-env /app/build ./build
-CMD ["npm", "run", "start"]
+CMD ["serve", "-s", "build", "-l", "tcp://0.0.0.0:3000"]
