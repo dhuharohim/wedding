@@ -1,23 +1,20 @@
-FROM node:20-alpine AS builder
+FROM node:20 AS development-dependencies-env
 WORKDIR /app
-ENV CI=true
+# Copy only package.json to avoid lockfile platform mismatch
+COPY package.json ./
+# Resolve dev deps on Debian so optional native packages match the platform
+RUN npm install --include=dev
 
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_KEY
-ARG REACT_APP_SUPABASE_URL
-ARG REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
-ENV VITE_SUPABASE_KEY=$VITE_SUPABASE_KEY
-ENV REACT_APP_SUPABASE_URL=$REACT_APP_SUPABASE_URL
-ENV REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY=$REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY
-
-COPY package.json package-lock.json* ./
-RUN npm install --no-audit --no-fund
+FROM node:20 AS build-env
+WORKDIR /app
 COPY . .
+COPY --from=development-dependencies-env /app/node_modules ./node_modules
 RUN npm run build
 
-FROM nginx:alpine AS runner
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+FROM node:20-alpine AS production
+WORKDIR /app
+# Copy only package.json to resolve runtime deps for musl/Alpine
+COPY package.json ./
+RUN npm install --omit=dev --no-audit --no-fund
+COPY --from=build-env /app/build ./build
+CMD ["npm", "run", "start"]
