@@ -128,7 +128,6 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
         }
 
         .scroll-reveal-text {
-          font-size: clamp(1.6rem, 4vw, 3rem);
           line-height: 1.5;
           font-weight: 600;
         }
@@ -138,7 +137,10 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
         }
       `}
       </style>
-      <h2 ref={containerRef} className={`scroll-reveal ${containerClassName}`}>
+      <h2
+        ref={containerRef}
+        className={`scroll-reveal text-5xl ${containerClassName}`}
+      >
         <p className={`scroll-reveal-text ${textClassName}`}>{splitText}</p>
       </h2>
     </>

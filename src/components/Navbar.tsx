@@ -1,6 +1,8 @@
 import CardNav from "./CardNav";
+import { useTranslation } from "react-i18next";
 
 export const Navbar = () => {
+  const { t } = useTranslation();
   const items: {
     label: string;
     bgColor: string;
@@ -11,40 +13,40 @@ export const Navbar = () => {
     }[];
   }[] = [
     {
-      label: "Couple",
+      label: t("navbar.couple"),
       bgColor: "#0a0a0a",
       textColor: "#fbbf24",
-      links: [{ label: "View", href: "#couple" }],
+      links: [{ label: t("navbar.view"), href: "#couple" }],
     },
     {
-      label: "Story",
+      label: t("navbar.story"),
       bgColor: "#0b0b0b",
       textColor: "#fbbf24",
-      links: [{ label: "Read", href: "#story" }],
+      links: [{ label: t("navbar.read"), href: "#story" }],
     },
     {
-      label: "Gallery",
+      label: t("navbar.gallery"),
       bgColor: "#0c0c0c",
       textColor: "#fbbf24",
-      links: [{ label: "Open", href: "#gallery" }],
+      links: [{ label: t("navbar.open"), href: "#gallery" }],
     },
     {
-      label: "Events",
+      label: t("navbar.events"),
       bgColor: "#0a0a0a",
       textColor: "#fbbf24",
-      links: [{ label: "Details", href: "#events" }],
+      links: [{ label: t("navbar.details"), href: "#events" }],
     },
     {
-      label: "Gift",
+      label: t("navbar.gift"),
       bgColor: "#0b0b0b",
       textColor: "#fbbf24",
-      links: [{ label: "Info", href: "#gift" }],
+      links: [{ label: t("navbar.info"), href: "#gift" }],
     },
     {
-      label: "RSVP",
+      label: t("navbar.rsvp"),
       bgColor: "#0c0c0c",
       textColor: "#fbbf24",
-      links: [{ label: "Confirm", href: "#rsvp" }],
+      links: [{ label: t("navbar.confirm"), href: "#rsvp" }],
     },
   ];
 

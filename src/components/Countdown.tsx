@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Counter from "./Counter";
+import { useTranslation } from "react-i18next";
 
 interface TimeLeft {
   days: number;
@@ -8,6 +10,7 @@ interface TimeLeft {
 }
 
 export const Countdown = ({ targetDate }: { targetDate: Date }) => {
+  const { t } = useTranslation();
   const calculateTimeLeft = (): TimeLeft => {
     const difference = +targetDate - +new Date();
     let timeLeft: TimeLeft = {
@@ -40,17 +43,24 @@ export const Countdown = ({ targetDate }: { targetDate: Date }) => {
   });
 
   return (
-    <div className="flex justify-center gap-8 md:gap-16">
+    <div className="flex justify-center gap-4 md:gap-8">
       {Object.entries(timeLeft).map(([unit, value]) => (
-        <div key={unit} className="flex flex-col items-center group cursor-default">
-          <div className="relative">
-            <span className="text-4xl md:text-6xl font-serif font-light tabular-nums text-yellow-100 group-hover:text-yellow-500 transition-colors duration-500">
-              {value.toString().padStart(2, "0")}
-            </span>
-            <span className="absolute -inset-4 bg-yellow-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full" />
-          </div>
-          <span className="text-[10px] uppercase tracking-[0.2em] mt-4 text-neutral-600 font-medium">
-            {unit}
+        <div
+          key={unit}
+          className="flex flex-col items-center group cursor-default"
+        >
+          <Counter
+            value={Number(value)}
+            places={[10, 1]}
+            fontSize={50}
+            padding={5}
+            gap={2}
+            textColor="yellow-500"
+            fontWeight={500}
+          />
+
+          <span className="text-[10px] uppercase tracking-[0.2em] mt-4 text-neutral-200 font-medium">
+            {t(`countdown.units.${unit}`)}
           </span>
         </div>
       ))}

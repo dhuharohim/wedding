@@ -5,9 +5,11 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Textarea } from "./ui/textarea";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { BlurText } from "./ui/blur-text";
+import { Confirm } from "notiflix/build/notiflix-confirm-aio";
+import { useTranslation } from "react-i18next";
 import {
   Form,
   FormField,
@@ -36,7 +38,11 @@ interface RsvpFormData {
   guests: number;
 }
 
+const SUBMIT_COOLDOWN_MS = 60_000;
+const LS_KEY_RSVP_LAST_SUBMIT_AT = "rsvp:lastSubmittedAt";
+
 export const Rsvp = () => {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<RsvpFormData>({
     defaultValues: {
@@ -48,28 +54,58 @@ export const Rsvp = () => {
   });
 
   const onSubmit = async (data: RsvpFormData) => {
-    setIsSubmitting(true);
-    const exec = async () => {
-      if (supabase) {
-        const { error } = await supabase.from("rsvp_wedding").insert({
-          full_name: data.fullName,
-          email: data.email,
-          attending: data.attending,
-          guests: data.guests,
-        });
-        if (error) throw new Error("Failed to submit RSVP");
-      }
-    };
     try {
-      await toast.promise(exec(), {
-        loading: "Sending RSVP...",
-        success: "RSVP Sent Successfully",
-        error: "Failed to submit RSVP",
-      });
-      form.reset();
-    } finally {
-      setIsSubmitting(false);
-    }
+      const last = Number(
+        localStorage.getItem(LS_KEY_RSVP_LAST_SUBMIT_AT) || "0"
+      );
+      const now = Date.now();
+      if (Number.isFinite(last) && now - last < SUBMIT_COOLDOWN_MS) {
+        const remaining = Math.ceil((SUBMIT_COOLDOWN_MS - (now - last)) / 1000);
+        toast.error(t("rsvp.spam_wait", { s: remaining }));
+        return;
+      }
+    } catch {}
+
+    setIsSubmitting(true);
+
+    Confirm.show(
+      t("rsvp.confirm_title"),
+      t("rsvp.confirm_message"),
+      t("rsvp.confirm_yes"),
+      t("rsvp.confirm_no"),
+      async () => {
+        const exec = async () => {
+          if (supabase) {
+            const { error } = await supabase.from("rsvp_wedding").insert({
+              full_name: data.fullName,
+              email: data.email,
+              attending: data.attending,
+              guests: data.guests,
+            });
+            if (error) throw new Error("Failed to submit RSVP");
+          }
+        };
+        try {
+          await toast.promise(exec(), {
+            loading: t("rsvp.toast_loading"),
+            success: t("rsvp.toast_success"),
+            error: t("rsvp.toast_error"),
+          });
+          form.reset();
+          try {
+            localStorage.setItem(
+              LS_KEY_RSVP_LAST_SUBMIT_AT,
+              String(Date.now())
+            );
+          } catch {}
+        } finally {
+          setIsSubmitting(false);
+        }
+      },
+      () => {
+        setIsSubmitting(false);
+      }
+    );
   };
 
   return (
@@ -80,11 +116,11 @@ export const Rsvp = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-2xl mx-auto text-center mb-16">
           <BlurText
-            text="RSVP"
+            text={t("rsvp.title")}
             className="justify-center font-serif text-4xl md:text-5xl text-yellow-100/90 mb-4"
           />
           <p className="text-neutral-500 uppercase tracking-widest text-xs">
-            Kindly Respond before event
+            {t("rsvp.subtitle")}
           </p>
         </div>
 
@@ -98,9 +134,9 @@ export const Rsvp = () => {
                   rules={{ required: "Required" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest">
-                        Full Name
-                      </FormLabel>
+                  <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest">
+                    {t("rsvp.fields.full_name")}
+                  </FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -115,9 +151,9 @@ export const Rsvp = () => {
                   rules={{ required: "Required" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest">
-                        Email
-                      </FormLabel>
+                  <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest">
+                    {t("rsvp.fields.email")}
+                  </FormLabel>
                       <FormControl>
                         <Input {...field} type="email" />
                       </FormControl>
@@ -131,9 +167,9 @@ export const Rsvp = () => {
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="pt-4">
-                      <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest mb-2 block">
-                        Attendance
-                      </FormLabel>
+                  <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest mb-2 block">
+                    {t("rsvp.fields.attendance")}
+                  </FormLabel>
                       <FormControl>
                         <RadioGroup
                           value={String(field.value)}
@@ -150,7 +186,7 @@ export const Rsvp = () => {
                               htmlFor="yes"
                               className="font-serif text-xl text-yellow-100 cursor-pointer font-light"
                             >
-                              Joyfully Accepts
+                              {t("rsvp.fields.accept")}
                             </Label>
                           </div>
                           <div className="flex items-center space-x-3">
@@ -163,7 +199,7 @@ export const Rsvp = () => {
                               htmlFor="no"
                               className="font-serif text-xl text-neutral-400 cursor-pointer font-light"
                             >
-                              Regretfully Declines
+                              {t("rsvp.fields.decline")}
                             </Label>
                           </div>
                         </RadioGroup>
@@ -180,7 +216,7 @@ export const Rsvp = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-neutral-500 text-xs uppercase tracking-widest">
-                          Guests
+                          {t("rsvp.fields.guests")}
                         </FormLabel>
                         <FormControl>
                           <Select
@@ -216,7 +252,7 @@ export const Rsvp = () => {
                 {isSubmitting ? (
                   <Loader2 className="animate-spin" />
                 ) : (
-                  "Confirm Attendance"
+                  t("rsvp.submit")
                 )}
               </Button>
             </form>

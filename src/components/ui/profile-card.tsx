@@ -32,7 +32,7 @@ export const ProfileCard = ({
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         {/* Frame corners */}
         <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-yellow-600/50 z-20" />
@@ -51,11 +51,11 @@ export const ProfileCard = ({
           </h3>
         </div>
 
-        <div
+        {/* <div
           className={`w-12 h-px bg-yellow-800/50 ${
             align === "right" ? "md:ml-auto" : "md:mr-auto"
           } mx-auto`}
-        />
+        /> */}
 
         <div className="text-neutral-400 font-light text-sm leading-relaxed">
           {description}

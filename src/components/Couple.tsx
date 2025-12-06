@@ -1,32 +1,57 @@
 import { BlurText } from "./ui/blur-text";
 import { ProfileCard } from "./ui/profile-card";
+import { useTranslation } from "react-i18next";
+import { motion } from "motion/react";
+import { ShinyText } from "./ui/shiny-text";
 
 export const Couple = () => {
+  const { t } = useTranslation();
   return (
     <section id="couple" className="py-24 relative z-10 overflow-hidden">
+      {/* Subtle background accents */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-1/3 -translate-x-1/2 h-64 w-64 rounded-full bg-yellow-500/10 blur-3xl" />
+        <div className="absolute left-1/4 bottom-10 h-48 w-48 rounded-full bg-yellow-500/10 blur-2xl" />
+      </div>
       <div className="container mx-auto px-4">
         <div className="text-center mb-20">
           <BlurText
-            text="The Happy Couple"
+            text={t("couple.title")}
             className="justify-center font-serif text-4xl md:text-5xl text-yellow-100/90 mb-4"
           />
           <p className="text-neutral-500 text-sm tracking-widest uppercase mt-4">
-            We are getting married
+            {t("couple.subtitle")}
           </p>
         </div>
-
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-24 max-w-5xl mx-auto items-start">
+        <div className="relative grid md:grid-cols-2 gap-12 lg:gap-24 max-w-5xl mx-auto items-start">
+          {/* Center monogram */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 0.8, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="relative flex h-24 w-24 items-center justify-center rounded-full border border-yellow-700/30 bg-yellow-50/5 backdrop-blur-sm"
+            >
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-yellow-500/20 via-transparent to-yellow-500/10" />
+              <ShinyText
+                text="D & N"
+                className="font-serif text-yellow-100 text-xl"
+                speed={7}
+              />
+            </motion.div>
+          </div>
           {/* Groom */}
           <ProfileCard
             name="M Dhuha Rohim, S.Kom"
-            role="The Groom"
-            image="https://images.unsplash.com/photo-1670291362999-00f36b631e15?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncm9vbSUyMHBvcnRyYWl0JTIwb3V0ZG9vciUyMHdlZGRpbmd8ZW58MXx8fHwxNzY0OTA4NzU2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+            role={t("couple.groom_role")}
+            image="/assets/images/dhuha.jpeg"
             align="right"
             description={
               <>
                 <div className="mt-4 pt-4 border-t border-yellow-900/30">
                   <p className="text-xs uppercase tracking-widest mb-2 text-neutral-500">
-                    Only child of
+                    {t("couple.only_child_of")}
                   </p>
                   <p className="text-base font-serif text-neutral-300">
                     Drs. Suwarno (Alm) & Martiningrum, S.H (Almh)
@@ -39,17 +64,17 @@ export const Couple = () => {
           {/* Bride */}
           <ProfileCard
             name="Nisa Grestasya Tampubolon, S.M"
-            role="The Bride"
-            image="https://images.unsplash.com/photo-1598812300657-a24f1941c693?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxicmlkZSUyMHBvcnRyYWl0JTIwb3V0ZG9vciUyMHdlZGRpbmd8ZW58MXx8fHwxNzY0OTA4NzU2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+            role={t("couple.bride_role")}
+            image="/assets/images/nisa.jpeg"
             align="left"
             description={
               <>
                 <div className="mt-4 pt-4 border-t border-yellow-900/30">
                   <p className="text-xs uppercase tracking-widest mb-2 text-neutral-500">
-                    First daughter of
+                    {t("couple.first_daughter_of")}
                   </p>
                   <p className="text-base font-serif text-neutral-300">
-                    Winton Jepriadi Tampubolon & Ruminta Simbolon
+                    Winton Jefriadi Tampubolon & Rominta Simbolon
                   </p>
                 </div>
               </>

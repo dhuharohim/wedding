@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { motion } from "motion/react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
+import { Confirm } from "notiflix/build/notiflix-confirm-aio";
 import {
   Form,
   FormField,
@@ -13,9 +13,10 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "./ui/form";
 import { supabase } from "../lib/supabase";
-import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface WishFormData {
   name: string;
@@ -29,7 +30,12 @@ interface Wish {
   created_at: string;
 }
 
+const SUBMIT_COOLDOWN_MS = 60_000;
+const LS_KEY_LAST_SUBMIT_AT = "wishes:lastSubmittedAt";
+
 export const Wishes = () => {
+  const { t } = useTranslation();
+  const [pendingData, setPendingData] = useState<WishFormData | null>(null);
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,15 +44,6 @@ export const Wishes = () => {
   useEffect(() => {
     const fetchWishes = async () => {
       if (!supabase) {
-        setWishes([
-          {
-            id: 1,
-            name: "Sarah & Mike",
-            message:
-              "Wishing you a lifetime of love and happiness! Can't wait to celebrate with you.",
-            created_at: "2 hours ago",
-          },
-        ]);
         return;
       }
       const { data, error } = await supabase
@@ -69,54 +66,71 @@ export const Wishes = () => {
   }, []);
 
   const onSubmit = async (data: WishFormData) => {
-    setIsSubmitting(true);
-    const exec = async () => {
-      if (supabase) {
-        const { data: inserted, error } = await supabase
-          .from("wishes_wedding")
-          .insert({ name: data.name, message: data.message })
-          .select("id,name,message,created_at")
-          .single();
-        if (error) {
-          const msg = String(error.message || "");
-          if (msg.toLowerCase().includes("row-level security")) {
-            throw new Error(
-              "Submission blocked by Supabase Row Level Security"
-            );
-          }
-          throw new Error("Failed to send wish");
-        }
-        setWishes((prev) => [
-          {
-            id: inserted!.id as number,
-            name: inserted!.name as string,
-            message: inserted!.message as string,
-            created_at: new Date(String(inserted!.created_at)).toLocaleString(),
-          },
-          ...prev,
-        ]);
-      } else {
-        setWishes((prev) => [
-          {
-            id: Date.now(),
-            name: data.name,
-            message: data.message,
-            created_at: "Just now",
-          },
-          ...prev,
-        ]);
-      }
-    };
     try {
-      await toast.promise(exec(), {
-        loading: "Sending wish...",
-        success: "Your wish has been sent!",
-        error: (e) => String(e?.message || "Failed to send wish"),
-      });
-      form.reset();
-    } finally {
-      setIsSubmitting(false);
-    }
+      const last = Number(localStorage.getItem(LS_KEY_LAST_SUBMIT_AT) || "0");
+      const now = Date.now();
+      if (Number.isFinite(last) && now - last < SUBMIT_COOLDOWN_MS) {
+        const remaining = Math.ceil((SUBMIT_COOLDOWN_MS - (now - last)) / 1000);
+        toast.error(t("wishes.spam_wait", { s: remaining }));
+        return;
+      }
+    } catch {}
+
+    setIsSubmitting(true);
+
+    Confirm.show(
+      t("wishes.confirm_title"),
+      t("wishes.confirm_message"),
+      t("wishes.confirm_yes"),
+      t("wishes.confirm_no"),
+      async () => {
+        const exec = async () => {
+          if (supabase) {
+            const { data: inserted, error } = await supabase
+              .from("wishes_wedding")
+              .insert({ name: data.name, message: data.message })
+              .select("id,name,message,created_at")
+              .single();
+            if (error) {
+              const msg = String(error.message || "");
+              if (msg.toLowerCase().includes("row-level security")) {
+                throw new Error(
+                  "Submission blocked by Supabase Row Level Security"
+                );
+              }
+              throw new Error("Failed to send wish");
+            }
+            setWishes((prev) => [
+              {
+                id: inserted!.id as number,
+                name: inserted!.name as string,
+                message: inserted!.message as string,
+                created_at: new Date(
+                  String(inserted!.created_at)
+                ).toLocaleString(),
+              },
+              ...prev,
+            ]);
+          }
+        };
+        try {
+          await toast.promise(exec(), {
+            loading: t("wishes.toast_loading"),
+            success: t("wishes.toast_success"),
+            error: (e) => String(e?.message || t("wishes.toast_error")),
+          });
+          form.reset({ name: "", message: "" });
+          try {
+            localStorage.setItem(LS_KEY_LAST_SUBMIT_AT, String(Date.now()));
+          } catch {}
+        } finally {
+          setIsSubmitting(false);
+        }
+      },
+      () => {
+        setIsSubmitting(false);
+      }
+    );
   };
 
   return (
@@ -126,7 +140,7 @@ export const Wishes = () => {
           {/* Form */}
           <div className="space-y-8">
             <h2 className="font-serif text-3xl md:text-4xl text-yellow-100">
-              Leave a Wish
+              {t("wishes.title")}
             </h2>
             <Form {...form}>
               <form
@@ -137,19 +151,38 @@ export const Wishes = () => {
                   name="name"
                   control={form.control}
                   rules={{ required: "Name is required" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-neutral-400 text-xs uppercase tracking-widest">
-                        Your Name
+                  render={({
+                    field,
+                    fieldState,
+                  }: {
+                    field: import("react-hook-form").ControllerRenderProps<
+                      WishFormData,
+                      "name"
+                    >;
+                    fieldState: import("react-hook-form").ControllerFieldState;
+                  }) => (
+                    <FormItem data-invalid={fieldState.invalid}>
+                      <FormLabel
+                        htmlFor={field.name}
+                        className="text-yellow-100"
+                      >
+                        {t("wishes.fields.name")}
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          id="wish-name"
+                          id={field.name}
+                          aria-invalid={fieldState.invalid}
                           placeholder="Enter your name"
+                          autoComplete="off"
+                          className="border border-yellow-100 text-yellow-100"
                         />
                       </FormControl>
-                      <FormMessage />
+                      {fieldState.invalid && (
+                        <FormMessage className="text-yellow-100">
+                          {fieldState.error?.message}
+                        </FormMessage>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -158,33 +191,47 @@ export const Wishes = () => {
                   name="message"
                   control={form.control}
                   rules={{ required: "Please write a message" }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-neutral-400 text-xs uppercase tracking-widest">
-                        Message
+                  render={({
+                    field,
+                    fieldState,
+                  }: {
+                    field: import("react-hook-form").ControllerRenderProps<
+                      WishFormData,
+                      "message"
+                    >;
+                    fieldState: import("react-hook-form").ControllerFieldState;
+                  }) => (
+                    <FormItem data-invalid={fieldState.invalid}>
+                      <FormLabel
+                        htmlFor={field.name}
+                        className="text-yellow-100"
+                      >
+                        {t("wishes.fields.message")}
                       </FormLabel>
                       <FormControl>
                         <Textarea
                           {...field}
-                          id="wish-message"
+                          id={field.name}
+                          aria-invalid={fieldState.invalid}
                           placeholder="Write a message..."
+                          autoComplete="off"
                         />
                       </FormControl>
-                      <FormMessage />
+                      {fieldState.invalid && (
+                        <FormMessage className="text-yellow-100">
+                          {fieldState.error?.message}
+                        </FormMessage>
+                      )}
                     </FormItem>
                   )}
                 />
-
                 <Button
                   type="submit"
+                  variant="default"
                   disabled={isSubmitting}
-                  className="bg-yellow-700 text-neutral-100 hover:bg-yellow-600 rounded-none px-8 py-6 text-xs uppercase tracking-widest font-semibold"
+                  className="w-full bg-yellow-700 hover:bg-yellow-600 text-white h-14 rounded-none text-xs uppercase tracking-[0.2em] font-bold mt-8"
                 >
-                  {isSubmitting ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    "Send Message"
-                  )}
+                  {t("wishes.submit")}
                 </Button>
               </form>
             </Form>
@@ -193,9 +240,12 @@ export const Wishes = () => {
           {/* List */}
           <div className="space-y-8 border-l border-neutral-800 pl-8 lg:pl-16">
             <h3 className="font-serif text-2xl text-neutral-500">
-              Latest Wishes
+              {t("wishes.latest")}
             </h3>
             <div className="space-y-8 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
+              {wishes.length === 0 && (
+                <p className="text-yellow-600 text-sm">{t("wishes.empty")}</p>
+              )}
               {wishes.map((wish, i) => (
                 <motion.div
                   key={wish.id}

@@ -1,7 +1,9 @@
 import { motion } from "motion/react";
 import { BlurText } from "./ui/blur-text";
+import { useTranslation } from "react-i18next";
 
 export const Events = () => {
+  const { t } = useTranslation();
   const events = [
     {
       title: "The Ceremony",
@@ -10,14 +12,16 @@ export const Events = () => {
       address: "Sidikalang, North Sumatera",
       image:
         "https://images.unsplash.com/photo-1610425303802-f09737e52e28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwdmVudWUlMjB0cmFkaXRpb25hbCUyMGJhdGFrfGVufDF8fHx8MTc2NDkxODM0NHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      href: "https://share.google/ek8mvTCwHmjFkr0Mn",
     },
     {
       title: "The Reception",
       time: "12:00 PM",
       location: "Home Sweet Home",
-      address: "425 Sisingamangaraja, Sidikalang, North Sumatera",
+      address: "438 Sisingamangaraja, Sidikalang, North Sumatera",
       image:
         "https://images.unsplash.com/photo-1564587081321-62723533e3c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwZHJlc3MlMjBkZXRhaWx8ZW58MXx8fHwxNzY0ODY0OTI5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+      href: "https://share.google/B2Se4ZCTYP0TYBvwO",
     },
   ];
 
@@ -26,10 +30,10 @@ export const Events = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-20">
           <BlurText
-            text="Save The Date"
+            text={t("events.save_the_date")}
             className="justify-center font-serif text-4xl md:text-5xl text-yellow-100/90 mb-4"
           />
-          <p className="text-neutral-500 text-sm tracking-widest uppercase mt-4">
+          <p className="text-yellow-500 text-sm tracking-widest uppercase mt-4">
             December 19, 2025
           </p>
         </div>
@@ -38,14 +42,11 @@ export const Events = () => {
           {events.map((event, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
               className="relative bg-neutral-950 p-12 lg:p-16 flex flex-col items-center text-center group overflow-hidden"
+              whileHover={{ y: -6 }}
+              transition={{ type: "spring", stiffness: 280, damping: 24 }}
             >
-              {/* Background Fade Image on Hover */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700">
+              <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
                 <img
                   src={event.image}
                   alt=""
@@ -65,10 +66,17 @@ export const Events = () => {
                   <p className="text-neutral-300 font-medium tracking-wide">
                     {event.location}
                   </p>
-                  <p className="text-neutral-600 text-sm max-w-xs mx-auto">
-                    {event.address}
-                  </p>
+                  <p className="text-neutral-400 text-sm">{event.address}</p>
                 </div>
+                <a
+                  href={event.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-center px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-full gap-2 text-yellow-600 hover:text-yellow-500 hover:border-yellow-700/50 hover:bg-yellow-700/10 transition-colors uppercase tracking-widest"
+                >
+                  {t("events.open_in_maps")}
+                </a>
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-yellow-900/10 rounded-none opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </motion.div>
           ))}
