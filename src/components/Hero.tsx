@@ -20,6 +20,7 @@ export const Hero = () => {
         <img
           src="https://images.unsplash.com/photo-1763391275169-d686f6d46f17?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwY291cGxlJTIwcG9ydHJhaXQlMjBhcnRpc3RpY3xlbnwxfHx8fDE3NjQ5MTgzNDR8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
           alt="Couple"
+          loading="lazy"
           className="w-full h-full object-cover object-center grayscale-[50%] sepia-[20%]"
         />
         {/* Cinematic Vignette */}
@@ -76,10 +77,11 @@ export const Hero = () => {
                   key={logo.src}
                   className="flex flex-col items-center gap-2"
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-md border border-yellow-600/25 bg-neutral-900/40">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-md border border-yellow-600/25 bg-neutral-900">
                     <img
                       src={logo.src}
                       alt={logo.name}
+                      loading="lazy"
                       className="h-10 w-100 object-cover"
                     />
                   </div>

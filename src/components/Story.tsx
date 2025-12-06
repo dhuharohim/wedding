@@ -53,11 +53,12 @@ export const Story = () => {
 
           <div className="mt-16 relative h-64 md:h-96 w-full overflow-hidden grayscale-[40%]">
             <motion.img
-              src="/assets/images/street.jpg"
+              src="/assets/images/street.avif"
               initial={{ scale: 1.02, y: 8, opacity: 0 }}
               whileInView={{ scale: 1, y: 0, opacity: 0.8 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: "easeOut" }}
+              loading="lazy"
               className="w-full h-full object-cover object-center"
               alt="Story Banner"
             />

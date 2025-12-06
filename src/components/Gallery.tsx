@@ -4,15 +4,18 @@ import { BlurText } from "./ui/blur-text";
 import { useTranslation } from "react-i18next";
 
 const images = [
-  "/assets/images/batak.jpg",
-  "/assets/images/white.jpg",
-  "/assets/images/black.jpg",
-  "/assets/images/jawa.jpg",
+  "/assets/images/batak.avif",
+  "/assets/images/white.avif",
+  "/assets/images/black.avif",
+  "/assets/images/jawa.avif",
 ];
 
 export const Gallery = () => {
   const { t } = useTranslation();
-  const items = images.map((image, i) => ({ image, text: t("gallery.item", { index: i + 1 }) }));
+  const items = images.map((image, i) => ({
+    image,
+    text: t("gallery.item", { index: i + 1 }),
+  }));
   return (
     <section id="gallery" className="py-24 relative z-10">
       <div className="container mx-auto px-4">

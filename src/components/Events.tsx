@@ -50,6 +50,7 @@ export const Events = () => {
                 <img
                   src={event.image}
                   alt=""
+                  loading="lazy"
                   className="w-full h-full object-cover grayscale"
                 />
               </div>

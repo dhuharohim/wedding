@@ -84,6 +84,7 @@ export function FancyCard({
           animate={{ scale: 1, opacity: 0.3 }}
           whileHover={reduceMotion ? {} : { scale: 1.04 }}
           transition={{ duration: reduceMotion ? 0.2 : 0.8, ease: "easeOut" }}
+          loading="lazy"
           className="absolute inset-0 h-full w-full object-cover"
         />
       )}

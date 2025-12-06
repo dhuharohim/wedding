@@ -182,7 +182,7 @@ const CardNav: React.FC<CardNavProps> = ({
 
             <div className="logo-container">
               {logo ? (
-                <img src={logo} alt={logoAlt} className="logo" />
+                <img src={logo} alt={logoAlt} className="logo" loading="lazy" />
               ) : (
                 <div className="logo font-serif text-xl tracking-widest font-bold text-yellow-500">
                   D & N

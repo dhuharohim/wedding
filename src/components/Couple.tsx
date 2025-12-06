@@ -45,7 +45,7 @@ export const Couple = () => {
           <ProfileCard
             name="M Dhuha Rohim, S.Kom"
             role={t("couple.groom_role")}
-            image="/assets/images/dhuha.jpeg"
+            image="/assets/images/dhuha.avif"
             align="right"
             description={
               <>
@@ -65,7 +65,7 @@ export const Couple = () => {
           <ProfileCard
             name="Nisa Grestasya Tampubolon, S.M"
             role={t("couple.bride_role")}
-            image="/assets/images/nisa.jpeg"
+            image="/assets/images/nisa.avif"
             align="left"
             description={
               <>
